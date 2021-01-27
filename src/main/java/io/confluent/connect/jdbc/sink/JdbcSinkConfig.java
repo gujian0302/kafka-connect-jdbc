@@ -235,7 +235,7 @@ public class JdbcSinkConfig extends AbstractConfig {
         .define(
             SHARDING_SPHERE_YAML_CONF_CONFIG,
             ConfigDef.Type.STRING,
-            ConfigDef.NO_DEFAULT_VALUE,
+            "",
             ConfigDef.Importance.HIGH,
             SHARDING_SPHERE_YAML_CONF_DOC,
             CONNECTION_GROUP,

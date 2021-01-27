@@ -212,8 +212,7 @@ public class GenericDatabaseDialect implements DatabaseDialect {
     // These config names are the same for both source and sink configs ...
     String username = config.getString(JdbcSourceConnectorConfig.CONNECTION_USER_CONFIG);
     Password dbPassword = config.getPassword(JdbcSourceConnectorConfig.CONNECTION_PASSWORD_CONFIG);
-    final String shardingSphereYamlConfig =
-        config.getString(JdbcSourceConnectorConfig.SHARDING_SPHERE_YAML_CONF_CONFIG);
+
     Properties properties = new Properties();
     if (username != null) {
       properties.setProperty("user", username);
@@ -228,9 +227,16 @@ public class GenericDatabaseDialect implements DatabaseDialect {
     DriverManager.setLoginTimeout(40);
 
     Connection connection = null;
-    if (shardingSphereYamlConfig != null && shardingSphereYamlConfig.length() != 0) {
+    final boolean shardingSupport = config.values()
+        .containsKey(JdbcSourceConnectorConfig.SHARDING_SPHERE_YAML_CONF_CONFIG)
+        && config.getString(
+            JdbcSourceConnectorConfig.SHARDING_SPHERE_YAML_CONF_CONFIG).length() != 0;
+    if (shardingSupport) {
       if (dataSource == null) {
+        String shardingSphereYamlConfig = null;
         try {
+          shardingSphereYamlConfig = config
+              .getString(JdbcSourceConnectorConfig.SHARDING_SPHERE_YAML_CONF_CONFIG);
           dataSource = YamlShardingDataSourceFactory
               .createDataSource(shardingSphereYamlConfig.getBytes());
         } catch (IOException e) {

@@ -1,0 +1,27 @@
+dataSources:
+  ds0: !!com.zaxxer.hikari.HikariDataSource
+    driverClassName: org.apache.derby.jdbc.EmbeddedDriver
+    jdbcUrl: jdbc:derby:__test_database_db0
+    username:
+    password:
+  ds1: !!com.zaxxer.hikari.HikariDataSource
+    driverClassName: org.apache.derby.jdbc.EmbeddedDriver
+    jdbcUrl: jdbc:derby:__test_database_db1
+    username:
+    password:
+
+shardingRule:
+  tables:
+    t_order:
+      actualDataNodes: ds${0..1}.t_order_${0..20}
+      databaseStrategy:
+        inline:
+          shardingColumn: user_id
+          algorithmExpression: ds${user_id.hashCode() % 2}
+      tableStrategy:
+        inline:
+          shardingColumn: trade_code
+          algorithmExpression: t_order_${trade_code.hashCode() % 21}
+
+props:
+  sql.show: true
