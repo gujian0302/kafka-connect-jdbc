@@ -17,6 +17,7 @@ package io.confluent.connect.jdbc.dialect;
 
 import java.time.ZoneOffset;
 import java.util.TimeZone;
+import javax.sql.DataSource;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.types.Password;
 import org.apache.kafka.connect.data.Date;
@@ -26,6 +27,7 @@ import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.data.Time;
 import org.apache.kafka.connect.errors.ConnectException;
+import org.apache.shardingsphere.shardingjdbc.api.yaml.YamlShardingDataSourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,6 +140,7 @@ public class GenericDatabaseDialect implements DatabaseDialect {
   private volatile JdbcDriverInfo jdbcDriverInfo;
   private final int batchMaxRows;
   private final TimeZone timeZone;
+  private DataSource dataSource;
 
   /**
    * Create a new dialect instance with the given connector configuration.
@@ -209,6 +212,8 @@ public class GenericDatabaseDialect implements DatabaseDialect {
     // These config names are the same for both source and sink configs ...
     String username = config.getString(JdbcSourceConnectorConfig.CONNECTION_USER_CONFIG);
     Password dbPassword = config.getPassword(JdbcSourceConnectorConfig.CONNECTION_PASSWORD_CONFIG);
+    final String shardingSphereYamlConfig =
+        config.getString(JdbcSourceConnectorConfig.SHARDING_SPHERE_YAML_CONF_CONFIG);
     Properties properties = new Properties();
     if (username != null) {
       properties.setProperty("user", username);
@@ -221,7 +226,24 @@ public class GenericDatabaseDialect implements DatabaseDialect {
     // handshake, while still giving enough time to validate once in the follower worker,
     // and again in the leader worker and still be under 90s REST serving timeout
     DriverManager.setLoginTimeout(40);
-    Connection connection = DriverManager.getConnection(jdbcUrl, properties);
+
+    Connection connection = null;
+    if (shardingSphereYamlConfig != null && shardingSphereYamlConfig.length() != 0) {
+      if (dataSource == null) {
+        try {
+          dataSource = YamlShardingDataSourceFactory
+              .createDataSource(shardingSphereYamlConfig.getBytes());
+        } catch (IOException e) {
+          log.error("ShardingSphere Yaml Configuration Error, The Configuration is: \n{}",
+              shardingSphereYamlConfig);
+          throw new SQLException("ShardingSphere Yaml Configuration Error", e);
+        }
+      }
+      connection = dataSource.getConnection();
+    } else {
+      connection = DriverManager.getConnection(jdbcUrl, properties);
+    }
+
     if (jdbcDriverInfo == null) {
       jdbcDriverInfo = createJdbcDriverInfo(connection);
     }

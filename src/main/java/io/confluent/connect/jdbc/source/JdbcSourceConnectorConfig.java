@@ -64,6 +64,8 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
   private static final String CONNECTION_USER_DOC = "JDBC connection user.";
   private static final String CONNECTION_USER_DISPLAY = "JDBC User";
 
+  public static final String SHARDING_SPHERE_YAML_CONF_CONFIG = "sharding.sphere.yaml.conf";
+
   public static final String CONNECTION_PASSWORD_CONFIG = "connection.password";
   private static final String CONNECTION_PASSWORD_DOC = "JDBC connection password.";
   private static final String CONNECTION_PASSWORD_DISPLAY = "JDBC Password";

@@ -15,6 +15,8 @@
 
 package io.confluent.connect.jdbc.sink;
 
+import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.SHARDING_SPHERE_YAML_CONF_CONFIG;
+
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -212,6 +214,10 @@ public class JdbcSinkConfig extends AbstractConfig {
       + "inserting time-based values. Defaults to UTC.";
   private static final String DB_TIMEZONE_CONFIG_DISPLAY = "DB Time Zone";
 
+  public static final String SHARDING_SPHERE_YAML_CONF_DOC = "JDBC sharding.sphere.yaml.conf";
+  public static final String SHARDING_SPHERE_YAML_CONF_DISPLAY =
+      "SHARDING SPHERE CONFIG YAML VERSION";
+
   public static final String QUOTE_SQL_IDENTIFIERS_CONFIG =
       JdbcSourceConnectorConfig.QUOTE_SQL_IDENTIFIERS_CONFIG;
   public static final String QUOTE_SQL_IDENTIFIERS_DEFAULT =
@@ -225,6 +231,18 @@ public class JdbcSinkConfig extends AbstractConfig {
       EnumRecommender.in(QuoteMethod.values());
 
   public static final ConfigDef CONFIG_DEF = new ConfigDef()
+        // ShardingSphere Yaml Configuration
+        .define(
+            SHARDING_SPHERE_YAML_CONF_CONFIG,
+            ConfigDef.Type.STRING,
+            ConfigDef.NO_DEFAULT_VALUE,
+            ConfigDef.Importance.HIGH,
+            SHARDING_SPHERE_YAML_CONF_DOC,
+            CONNECTION_GROUP,
+            1,
+            ConfigDef.Width.LONG,
+            SHARDING_SPHERE_YAML_CONF_DISPLAY
+        )
         // Connection
         .define(
             CONNECTION_URL,
